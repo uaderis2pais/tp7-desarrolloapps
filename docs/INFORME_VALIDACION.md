@@ -57,3 +57,4 @@ A continuación se documentan los resultados obtenidos en una serie de ejecucion
 
 - El algoritmo **SGP4 implementado en la aplicación móvil es completamente apto para el cálculo de ventanas de visibilidad (AOS/LOS), seguimiento en mapa mundial y apuntamiento de antenas satelitales**. En antenas de haz amplio o terminales móviles de usuario (ancho de haz típico de $3^\circ$ a $15^\circ$), un error de posición de 1 a 3 km a una distancia de 500 a 1000 km genera un error angular de apuntamiento inferior a $0.2^\circ$, perfectamente admisible en radioenlaces de telecomunicaciones.
 - La incorporación de la alerta automática de datos desactualizados (**RF-16**) cuando la antigüedad del TLE supera las 72 horas resulta indispensable para alertar al usuario antes de planificar observaciones de precisión.
+

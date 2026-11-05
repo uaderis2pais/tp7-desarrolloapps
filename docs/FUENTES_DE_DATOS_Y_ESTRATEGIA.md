@@ -79,3 +79,4 @@ En caso de falla de red, error de timeout (12s) o respuesta HTTP 429/503:
                                                        ├── ÉXITO ──► [Retornar con Alerta RF-16]
                                                        └── FALLA ──► Semillas Embebidas (Seeds)
 ```
+

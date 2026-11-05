@@ -72,3 +72,4 @@ export interface ConstellationFilter {
   label: string;
   group: 'starlink' | 'stations' | 'gps' | 'weather' | 'science' | 'all';
 }
+

@@ -126,3 +126,4 @@ Los documentos técnicos requeridos por las especificaciones académicas del tra
 - **Facultad:** Facultad de Ciencia y Tecnología (FCyT) — Sede Concepción del Uruguay
 - **Asignatura:** Programación Móviles (2026)
 - **Repositorio Oficial:** [uaderis2pais/tp7-desarrolloapps](https://github.com/uaderis2pais/tp7-desarrolloapps.git)
+

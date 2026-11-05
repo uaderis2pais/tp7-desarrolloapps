@@ -119,6 +119,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({
           observer={observer}
           groundTrackSegments={groundTracks}
           footprintPoints={footprint}
+          footprintRadiusKm={footprintRadius}
           constellationPositions={constellationPositions}
           showConstellation={showConstellation}
           onSelectSatellite={handleConstellationSatClick}
@@ -294,3 +295,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 });
+

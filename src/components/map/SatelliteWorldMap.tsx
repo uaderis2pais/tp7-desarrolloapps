@@ -9,7 +9,8 @@ interface SatelliteWorldMapProps {
   position: SatellitePosition | null;
   observer: ObserverLocation;
   groundTrackSegments: GroundTrackPoint[][];
-  footprintPoints: { latitude: number; longitude: number }[];
+  footprintPoints?: { latitude: number; longitude: number }[];
+  footprintRadiusKm?: number;
   constellationPositions?: { id: number; name: string; latitude: number; longitude: number; altitude: number }[];
   showConstellation?: boolean;
   onSelectSatellite?: (id: number) => void;
@@ -19,7 +20,8 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
   position,
   observer,
   groundTrackSegments,
-  footprintPoints,
+  footprintPoints = [],
+  footprintRadiusKm = 0,
   constellationPositions = [],
   showConstellation = false,
   onSelectSatellite,
@@ -49,6 +51,10 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
     .leaflet-container {
       background: #090d16 !important;
     }
+    /* Sleek inverted dark tiles without API key or watermarks */
+    .dark-tiles {
+      filter: brightness(0.65) invert(1) contrast(2.2) hue-rotate(195deg) saturate(0.4) brightness(0.75);
+    }
     .sat-marker {
       display: flex;
       align-items: center;
@@ -57,7 +63,7 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
       height: 32px;
     }
     .sat-icon {
-      font-size: 20px;
+      font-size: 22px;
       filter: drop-shadow(0 0 8px #00f0ff);
       animation: pulse 2s infinite ease-in-out;
     }
@@ -88,16 +94,35 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
       center: [${position?.latitude || 0}, ${position?.longitude || 0}],
       zoom: 3,
       minZoom: 1,
-      maxZoom: 12,
+      maxZoom: 14,
       worldCopyJump: false,
       zoomControl: false
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; CartoDB &copy; OpenStreetMap',
-      subdomains: 'abcd',
-      maxZoom: 19
+    // Tile Layers (Free, No API Keys, No Watermarks)
+    var darkLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors',
+      className: 'dark-tiles'
     }).addTo(map);
+
+    var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 18,
+      attribution: 'Tiles &copy; Esri'
+    });
+
+    var currentLayer = 'dark';
+    function toggleBaseLayer() {
+      if (currentLayer === 'dark') {
+        map.removeLayer(darkLayer);
+        satelliteLayer.addTo(map);
+        currentLayer = 'satellite';
+      } else {
+        map.removeLayer(satelliteLayer);
+        darkLayer.addTo(map);
+        currentLayer = 'dark';
+      }
+    }
 
     var satMarker = null;
     var obsMarker = null;
@@ -140,6 +165,7 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
       satPos: position,
       groundTracks: groundTrackSegments,
       footprint: footprintPoints,
+      footprintRadiusKm: footprintRadiusKm,
       constellation: showConstellation ? constellationPositions : [],
     })});
 
@@ -172,13 +198,14 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
         });
       }
 
+      // Footprint: Using L.circle prevents horizontal antimeridian crossing wrap artifacts!
       if (footprintLayer) {
         map.removeLayer(footprintLayer);
         footprintLayer = null;
       }
-      if (data.footprint && data.footprint.length > 0) {
-        var fpLatLngs = data.footprint.map(function(p) { return [p.latitude, p.longitude]; });
-        footprintLayer = L.polygon(fpLatLngs, {
+      if (data.satPos && data.footprintRadiusKm > 0) {
+        footprintLayer = L.circle([data.satPos.latitude, data.satPos.longitude], {
+          radius: data.footprintRadiusKm * 1000,
           color: '#00f0ff',
           weight: 1.5,
           fillColor: '#00e5ff',
@@ -213,6 +240,8 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
           if (satMarker) map.panTo(satMarker.getLatLng());
         } else if (payload.action === 'CENTER_OBS') {
           if (obsMarker) map.panTo(obsMarker.getLatLng());
+        } else if (payload.action === 'TOGGLE_TILES') {
+          toggleBaseLayer();
         }
       } catch (e) {
         console.error(e);
@@ -240,6 +269,7 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
         satPos: position,
         groundTracks: groundTrackSegments,
         footprint: footprintPoints,
+        footprintRadiusKm: footprintRadiusKm,
         constellation: showConstellation ? constellationPositions : [],
       },
     });
@@ -249,7 +279,7 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
     } else {
       webViewRef.current?.postMessage(payload);
     }
-  }, [position, groundTrackSegments, footprintPoints, showConstellation, constellationPositions]);
+  }, [position, groundTrackSegments, footprintPoints, footprintRadiusKm, showConstellation, constellationPositions]);
 
   const handleCenterSat = () => {
     const msg = JSON.stringify({ action: 'CENTER_SAT' });
@@ -262,6 +292,15 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
 
   const handleCenterObs = () => {
     const msg = JSON.stringify({ action: 'CENTER_OBS' });
+    if (Platform.OS === 'web') {
+      iframeRef.current?.contentWindow?.postMessage(msg, '*');
+    } else {
+      webViewRef.current?.postMessage(msg);
+    }
+  };
+
+  const handleToggleLayer = () => {
+    const msg = JSON.stringify({ action: 'TOGGLE_TILES' });
     if (Platform.OS === 'web') {
       iframeRef.current?.contentWindow?.postMessage(msg, '*');
     } else {
@@ -320,6 +359,9 @@ export const SatelliteWorldMap: React.FC<SatelliteWorldMapProps> = ({
         <TouchableOpacity style={styles.controlButton} onPress={handleCenterObs} activeOpacity={0.7}>
           <Text style={styles.controlButtonText}>📍 Centrar Obs</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.controlButton} onPress={handleToggleLayer} activeOpacity={0.7}>
+          <Text style={styles.controlButtonText}>🗺️ Cambiar Mapa</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -343,15 +385,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   controlButton: {
-    backgroundColor: 'rgba(19, 27, 46, 0.88)',
+    backgroundColor: 'rgba(19, 27, 46, 0.92)',
     borderWidth: 1,
     borderColor: '#202d4a',
     paddingVertical: 7,
     paddingHorizontal: 12,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: '#00f0ff',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 3,
   },

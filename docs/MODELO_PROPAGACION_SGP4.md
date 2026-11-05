@@ -109,3 +109,4 @@ En `sgp4Engine.ts -> getGroundTrackSegments()`, el algoritmo evalúa la diferenc
 | **Presión de Radiación Solar** | Despreciable en LEO; modelado simple en SDP4 | Supone área y coeficiente de reflectividad esférico promedio; satélites con grandes paneles solares (ISS, Starlink) presentan variaciones según su actitud de apuntamiento. |
 | **Envejecimiento del TLE** | Monitoreo de antigüedad en horas (RF-16) | Un TLE tiene una validez nominal de 24 a 48 horas en LEO. Pasados 3 a 5 días, el error acumulado por arrastre atmosférico no modelado puede superar los 20 a 50 km. |
 | **Reingreso / Decadencia** | Detección de perigeo $< 120\text{ km}$ | Los objetos en reingreso activo salen del dominio analítico de SGP4 y requieren propagación numérica. |
+

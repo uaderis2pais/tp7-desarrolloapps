@@ -95,3 +95,4 @@ export class WhereTheIssProvider implements IDataProvider {
 }
 
 export const whereTheIssProvider = new WhereTheIssProvider();
+

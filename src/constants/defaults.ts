@@ -180,3 +180,4 @@ export const N2YO_BASE_URL = 'https://api.n2yo.com/rest/v1/satellite';
 export const EARTH_RADIUS_KM = 6378.137; // WGS-84 equatorial radius
 export const EARTH_FLATTENING = 1.0 / 298.257223563;
 export const SPEED_OF_LIGHT_KM_S = 299792.458;
+

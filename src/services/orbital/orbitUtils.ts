@@ -110,3 +110,4 @@ export function formatCountdown(targetDate: Date): string {
   if (hours > 0) return `en ${hours}h ${minutes}m`;
   return `en ${minutes}m`;
 }
+

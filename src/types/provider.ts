@@ -51,3 +51,4 @@ export interface IDataProvider {
   getOrbitalData(noradId: number): Promise<SatelliteRecord | null>;
   getValidationPosition?(noradId: number, timestamp?: number): Promise<ValidationPositionResult | null>;
 }
+

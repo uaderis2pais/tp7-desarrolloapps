@@ -84,3 +84,4 @@ Este documento detalla el guion paso a paso para la grabación del video de demo
      - **Error en Superficie (Haversine)** y **Error 3D Total en ECEF** (típicamente entre 0.5 km y 2 km).
      - Antigüedad del TLE utilizado.
    - Mostrar el historial de pruebas guardado en la base de datos local.
+
